@@ -7,10 +7,10 @@ multisite.accuracy(y, y.pred, site, estimate = c("auc", "bac", "cor", "hr", "mse
                    site.method = "covar", mixed = FALSE, min.n = 10, ...)
 }
 \arguments{
-  \item{y}{actual value of the variable that you want to predict. For \code{"auc"} and \code{"bac"} estimates, it must be a binary vector. For \code{"cor"} and \code{"mse"} estimates, it must be a numeric vector. For \code{"hr"} estimates, it must be an object of class \code{"Surv"}.}
-  \item{y.pred}{predicted value of the variable. For \code{"auc"}, \code{"cor"}, \code{"hr"}, and \code{"mse"} estimates, it must be a numeric vector. For \code{"bac"} estimates, it must be a binary vector.}
+  \item{y}{actual value of the variable that you want to predict. For \code{"auc"} estimates, it must be a binary vector. For \code{"bac"} estimates, it must be either a binary vector or a factor. For \code{"cor"} and \code{"mse"} estimates, it must be a numeric vector. For \code{"hr"} estimates, it must be an object of class \code{"Surv"}.}
+  \item{y.pred}{predicted value of the variable. For \code{"auc"}, \code{"cor"}, \code{"hr"}, and \code{"mse"} estimates, it must be a numeric vector. For \code{"bac"} estimates, it must be either a binary vector or a factor with the same levels as \code{"y"}.}
   \item{site}{vector with the name of the site for each observation. Ignored if \code{site.method} is \code{"none"}.}
-  \item{estimate}{\code{"auc"} (area under the ROC curve, when \code{"y"} is a binary variable and \code{"y.pred"} is a continous variable), \code{"bac"} (balanced accuracy, along with sensitivity and specificity, when both \code{"y"} and \code{"y.pred"} are binary variables), \code{"cor"} and \code{"mse"} (correlation and mean squared error, when both \code{"y"} and \code{"y.pred"} are numeric variables), \code{"hr"} (hazard ratio, when \code{"y"} is an object of class \code{"Surv"} and \code{"y.pred"} is a numeric variable).}
+  \item{estimate}{\code{"auc"} (area under the ROC curve, when \code{"y"} is a binary variable and \code{"y.pred"} is a continous variable), \code{"bac"} (balanced accuracy, along with sensitivity and specificity when both \code{"y"} and \code{"y.pred"} are binary variables; or along with the sensitivity to detect each group when both \code{"y"} and \code{"y.pred"} are factors), \code{"cor"} and \code{"mse"} (correlation and mean squared error, when both \code{"y"} and \code{"y.pred"} are numeric variables), \code{"hr"} (hazard ratio, when \code{"y"} is an object of class \code{"Surv"} and \code{"y.pred"} is a numeric variable).}
   \item{site.method}{\code{"covar"} (site as covariate, e.g., using \code{lm}), \code{"meta"} (meta-analysis across sites), or \code{"none"} (no control of the effects of the site).}
   \item{mixed}{try to fit mixed-effects models, only for \code{site.method} = \code{"covar"} and \code{estimate} = \code{"cor"}, \code{"mse"}, or \code{"hr"}.}
   \item{min.n}{sites below this minimum sample size will be ignored.}
@@ -21,7 +21,7 @@ multisite.accuracy(y, y.pred, site, estimate = c("auc", "bac", "cor", "hr", "mse
 \references{
   Solanes, A., Palau, P., Fortea, L., Salvador, R., Gonzalez-Navarro, L., Llach, C.D., Valenti, M., Vieta, E., Radua, J. (2021)
   Biased accuracy in multisite machine-learning studies due to incomplete removal of the effects of the site.
-  \emph{Psychiatry Research: Neuroimaging}, in Press.
+  \emph{Psychiatry Research: Neuroimaging}, 314:111313.
 }
 \examples{
 for (real_effects in c(FALSE, TRUE)) {

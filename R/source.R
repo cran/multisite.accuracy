@@ -7,9 +7,19 @@ function (y, y.pred, site, estimate = c("auc", "bac", "cor",
         1 && estimate %in% c("auc", "bac", "cor", "hr", "mse"))) {
         stop("estimate must be \"auc\", \"bac\", \"cor\", \"hr\", or \"mse\"")
     }
-    if (estimate %in% c("auc", "bac")) {
+    if (estimate == "auc") {
         if (!(is.vector(y) && all(y %in% 0:1))) {
-            stop("for \"auc\" and \"bac\", y must be a binary vector")
+            stop("for \"auc\", y must be a binary vector")
+        }
+        n = length(y)
+    }
+    if (estimate == "bac") {
+        if (!is.vector(y)) {
+            stop("for \"bac\", y must be a binary vector or a factor")
+        }
+        y_is_binary = all(y %in% 0:1)
+        if (!y_is_binary & !is.factor(y)) {
+            y = factor(y)
         }
         n = length(y)
     }
@@ -20,7 +30,7 @@ function (y, y.pred, site, estimate = c("auc", "bac", "cor",
         n = length(y)
     }
     if (estimate == "hr") {
-        if (!(class(y) == "Surv")) {
+        if (!inherits(y, "Surv")) {
             stop("for \"hr\", y must be a Surv object")
         }
         n = nrow(y)
@@ -32,9 +42,17 @@ function (y, y.pred, site, estimate = c("auc", "bac", "cor",
         }
     }
     if (estimate == "bac") {
-        if (!(is.vector(y.pred) && all(y.pred %in% 0:1) && length(y.pred) == 
-            n)) {
-            stop("for \"bac\", y.pred must be a binary vector with the same length as y")
+        if (y_is_binary) {
+            if (!(is.vector(y.pred) && all(y.pred %in% 0:1) && 
+                length(y.pred) == n)) {
+                stop("for \"bac\", if y is binary, y.pred must be a binary vector with the same length as y")
+            }
+        }
+        else {
+            if (!(is.vector(y.pred) && all(y.pred %in% levels(y)) && 
+                length(y.pred) == n)) {
+                stop("for \"bac\", if y is not binary, y.pred must be a factor with the same length and levels as y")
+            }
         }
     }
     if (!((is.vector(site.method) || is.factor(site.method)) && 
@@ -82,7 +100,7 @@ function (y, y.pred, site, estimate = c("auc", "bac", "cor",
                   direction = "<")
                 auc_cij = c(ci(mj))
                 yi = c(yi, auc_cij[2])
-                vi = c(vi, (max(diff(auc_cij))/qnorm(0.975))^2)
+                vi = c(vi, (max(diff(auc_cij))/qnorm(0.97499999999999998))^2)
             }
             m = rma(yi = yi, vi = vi, ...)
             auc = c(m$beta)
@@ -98,10 +116,18 @@ function (y, y.pred, site, estimate = c("auc", "bac", "cor",
             "method")))
     }
     if (estimate == "bac") {
-        for (group in 1:0) {
+        if (y_is_binary) {
+            groups = 1:0
+        }
+        else {
+            groups = levels(y)
+        }
+        props = list()
+        for (i in 1:length(groups)) {
+            group = groups[i]
             y.pred.g = y.pred[which(y == group)]
             site.g = site[which(y == group)]
-            se_sp = switch(site.method, covar = {
+            props[[i]] = switch(site.method, covar = {
                 contrasts(site.g) <- contr.sum
                 m = logistf(y.pred.g == group ~ site.g, ...)
                 beta0 = unname(m$coefficients[1])
@@ -115,23 +141,27 @@ function (y, y.pred, site, estimate = c("auc", "bac", "cor",
                   ni = c(ni, length(i_sitej))
                 }
                 m = rma(xi = xi, ni = ni, measure = "PLO", ...)
-                logit.se_sp = c(m$beta)
-                attr(logit.se_sp, "method") = "rma/logit"
-                plogis(logit.se_sp)
+                logit.prop = c(m$beta)
+                attr(logit.prop, "method") = "rma/logit"
+                plogis(logit.prop)
             }, none = mean(y.pred[which(y == group)] == group))
-            if (group) {
-                se = se_sp
+        }
+        out = data.frame(bac = mean(simplify2array(props)), site.method)
+        for (i in 1:length(groups)) {
+            if (y_is_binary) {
+                se_id = c("se", "sp")[i]
             }
             else {
-                sp = se_sp
+                se_id = paste0("se", i)
+                out[, paste0("group", i)] = groups[i]
             }
+            out[, se_id] = props[[i]]
+            out[, paste0(se_id, ".method")] = ifelse(!is.null(attr(props[[i]], 
+                "method")), attr(props[[i]], "method"), NA)
+            out[, paste0(se_id, ".warning")] = ifelse(!is.null(attr(props[[i]], 
+                "warning")), attr(props[[i]], "warning"), NA)
         }
-        return(data.frame(bac = (se + sp)/2, se, sp, site.method, 
-            se.method = ifelse(!is.null(attr(se, "method")), 
-                attr(se, "method"), NA), sp.method = ifelse(!is.null(attr(sp, 
-                "method")), attr(sp, "method"), NA), se.warning = ifelse(!is.null(attr(se, 
-                "warning")), attr(se, "warning"), NA), sp.warning = ifelse(!is.null(attr(sp, 
-                "warning")), attr(sp, "warning"), NA)))
+        return(out)
     }
     if (estimate == "cor") {
         cor = switch(site.method, covar = {
@@ -292,12 +322,12 @@ function (y, y.pred, site, estimate = c("auc", "bac", "cor",
                 mse.pred = mse.mean_pred
             }
         }
-        return(data.frame(mse.mean, mse.pred, mse.pred_div_mse.mean = mse.pred/mse.mean, 
-            site.method, mse.mean.method = ifelse(!is.null(attr(mse.mean, 
-                "method")), attr(mse.mean, "method"), NA), mse.pred.method = ifelse(!is.null(attr(mse.pred, 
-                "method")), attr(mse.pred, "method"), NA), mse.mean.warning = ifelse(!is.null(attr(mse.mean, 
+        return(data.frame(mse.pred_div_mse.mean = mse.pred/mse.mean, 
+            site.method, mse.mean, mse.mean.method = ifelse(!is.null(attr(mse.mean, 
+                "method")), attr(mse.mean, "method"), NA), mse.mean.warning = ifelse(!is.null(attr(mse.mean, 
                 "warning")), attr(mse.mean, "warning"), NA), 
-            mse.pred.warning = ifelse(!is.null(attr(mse.pred, 
+            mse.pred, mse.pred.method = ifelse(!is.null(attr(mse.pred, 
+                "method")), attr(mse.pred, "method"), NA), mse.pred.warning = ifelse(!is.null(attr(mse.pred, 
                 "warning")), attr(mse.pred, "warning"), NA)))
     }
 }
