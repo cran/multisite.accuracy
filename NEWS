@@ -1,3 +1,11 @@
+multisite.accuracy v1.2 (Release date: 2022-05-04)
+========================================
+
+Changes:
+
+* Solved an issue when using factors with "bac".
+
+
 multisite.accuracy v1.1 (Release date: 2022-05-04)
 ========================================
 

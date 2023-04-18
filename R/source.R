@@ -14,12 +14,14 @@ function (y, y.pred, site, estimate = c("auc", "bac", "cor",
         n = length(y)
     }
     if (estimate == "bac") {
-        if (!is.vector(y)) {
-            stop("for \"bac\", y must be a binary vector or a factor")
+        if (is.vector(y) && all(y %in% 0:1)) {
+            y_is_binary = TRUE
         }
-        y_is_binary = all(y %in% 0:1)
-        if (!y_is_binary & !is.factor(y)) {
-            y = factor(y)
+        else if (is.factor(y)) {
+            y_is_binary = FALSE
+        }
+        else {
+            stop("for \"bac\", y must be a binary vector or a factor")
         }
         n = length(y)
     }
@@ -49,7 +51,7 @@ function (y, y.pred, site, estimate = c("auc", "bac", "cor",
             }
         }
         else {
-            if (!(is.vector(y.pred) && all(y.pred %in% levels(y)) && 
+            if (!(is.factor(y.pred) && all(y.pred %in% levels(y)) && 
                 length(y.pred) == n)) {
                 stop("for \"bac\", if y is not binary, y.pred must be a factor with the same length and levels as y")
             }

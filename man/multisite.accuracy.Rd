@@ -22,6 +22,9 @@ multisite.accuracy(y, y.pred, site, estimate = c("auc", "bac", "cor", "hr", "mse
   Solanes, A., Palau, P., Fortea, L., Salvador, R., Gonzalez-Navarro, L., Llach, C.D., Valenti, M., Vieta, E., Radua, J. (2021)
   Biased accuracy in multisite machine-learning studies due to incomplete removal of the effects of the site.
   \emph{Psychiatry Research: Neuroimaging}, 314:111313.
+  Solanes, A., Gosling, C.J., Fortea, L., Ortuno, M., Lopez-Soley, E., Llufriu, S., Madero, S., Martinez-Heras, E., Pomarol-Clotet, E., Solana, E., Vieta, E., Radua, J. (2021)
+  Removing the effects of the site in brain imaging machine-learning - Measurement and extendable benchmark.
+  \emph{Neuroimage}, 265:119800.
 }
 \examples{
 for (real_effects in c(FALSE, TRUE)) {
