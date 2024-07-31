@@ -1,4 +1,13 @@
-multisite.accuracy v1.2 (Release date: 2022-05-04)
+multisite.accuracy v1.2 (Release date: 2024-07-31)
+========================================
+
+Changes:
+
+* Removed dependency on AROC package (scheduled for archival) by temporarily
+  adapting the AROC.sp function (until the AROC package is on CRAN again).
+
+
+multisite.accuracy v1.2 (Release date: 2023-04-18)
 ========================================
 
 Changes:

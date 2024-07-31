@@ -1,11 +1,10 @@
 export(multisite.accuracy)
 
-importFrom("AROC", "AROC.sp")
 importFrom("coxme", "coxme")
 importFrom("lme4", ".makeCC", "isSingular", "lmerControl")
 importFrom("lmerTest", "lmer")
 importFrom("logistf", "logistf")
 importFrom("metafor", "rma")
 importFrom("pROC", "ci", "roc")
-importFrom("stats", "binomial", "contr.sum", "contrasts<-", "cor", "glm", "lm", "plogis", "qnorm")
+importFrom("stats", "as.formula", "binomial", "contr.sum", "contrasts<-", "cor", "ecdf", "glm", "lm", "plogis", "pnorm", "predict", "qnorm", "quantile")
 importFrom("survival", "coxph", "Surv")
